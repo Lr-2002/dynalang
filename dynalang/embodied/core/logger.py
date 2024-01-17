@@ -227,6 +227,10 @@ class TensorBoardOutput(AsyncOutput):
           tf.summary.image(name, value, step)
         elif len(value.shape) == 4 and \
           (value.shape[-1] == 1 or value.shape[-1] == 3):
+          #import traceback
+          #stack_trace = traceback.extract_stack()
+          #for entry in stack_trace:
+          #    print(f"File: {entry.filename}, Line: {entry.lineno}, Function: {entry.name}")
           self._video_summary(name, value, step)
       except Exception:
         print('Error writing summary:', name)

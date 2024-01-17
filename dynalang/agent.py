@@ -360,6 +360,7 @@ class WorldModel(nj.Module):
       # n-step openl text generation
       report["1step_openl_text"] = one_step_openl["token"].sample(seed=nj.rng()).argmax(-1) 
       report["nstep_openl_text"] = openl["token"].sample(seed=nj.rng()).argmax(-1)
+    print(report)
     return report
 
   def vis(self, data, num_obs, num_imagine):

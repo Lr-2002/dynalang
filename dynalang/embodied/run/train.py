@@ -2,7 +2,7 @@ import collections
 import re
 import warnings
 import shutil
-
+from .save_data import save_data
 import embodied
 from embodied.core import path
 
@@ -38,6 +38,9 @@ def train(agent, env, replay, logger, args):
 
   nonzeros = set()
   def per_episode(ep):
+    #print('ep:', ep)
+    print('saving')
+    save_data(ep)
     length = len(ep['reward']) - 1
     score = float(ep['reward'].astype(np.float64).sum())
     sum_abs_reward = float(np.abs(ep['reward']).astype(np.float64).sum())
