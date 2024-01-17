@@ -64,10 +64,10 @@ def save_data(ep):
     }
     global global_cnt
     if global_cnt is None:
-        update_global_cnt("./save_data")
+        update_global_cnt("./save_data_fu")
 
 
-    save_path = f"./save_data/{global_cnt:06d}/"
+    save_path = f"./save_data_fu/{global_cnt:06d}/"
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     if not os.path.exists(save_path+'images'):
