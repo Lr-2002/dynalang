@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 import os
 import json
-global_cnt = None
+global_cnt = 000000
 def update_global_cnt(path):
     # 检查目录是否存在
     if os.path.exists(path):
@@ -63,7 +63,7 @@ def save_data(ep):
         "reward": None
     }
     global global_cnt
-    if global_cnt is None:
+    if global_cnt == 000000:
         update_global_cnt("./save_data_fu")
 
 
