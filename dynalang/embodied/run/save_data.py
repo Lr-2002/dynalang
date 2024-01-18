@@ -4,9 +4,11 @@ import os
 import json
 global_cnt = 000000
 obs_set = set(['token', 'is_read_step', 'reset', 'token_embed', 'log_language_info'])
-mapping_dict = {0: 'left', 1: 'right', 2: 'up', 3: 'down', 4: 'pickup', 5: 'drop', 6: 'get', 7: 'pedal', 8: 'grasp', 9: 'lift'}
+mapping_dict = {0: 'left', 1: 'right', 2: 'up', 3: 'down', 4: 'pickup', 5: 'drop', 6: 'get', 7: 'pedal', 8: 'grasp', 9: 'lift', 10:"noop"}
 def from_onehot_word(x):
     global mapping_dict
+    if sum(x) == 0:
+        return mapping_dict[10]
     index = np.argmax(x)
     return mapping_dict[index]
 
@@ -109,3 +111,5 @@ def save_data(ep, save_dir='./save_data_co'):
         json.dump(json_data, json_file, indent=2)
     global_cnt +=1
 
+if __name__ =='__main__':
+    print(from_onehot_word([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
