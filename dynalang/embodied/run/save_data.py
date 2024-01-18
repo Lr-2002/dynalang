@@ -46,9 +46,13 @@ def save_image(imgs, path):
         cnt+=1
 
 
-def save_data(ep):
+def save_data(ep, save_dir='./save_data_co'):
     """
     ep: {'image', 'is_read_step', 'token', 'token_embed', 'log_language_info', 'reward', 'is_first', 'is_last', 'is_terminal', 'action', 'reset'}
+    save_data
+        1. fu for future observation
+        2. co for correction
+        3. dy for dynamics
     """
     imgs = ep['image']
     json_data = {
@@ -64,10 +68,10 @@ def save_data(ep):
     }
     global global_cnt
     if global_cnt == 000000:
-        update_global_cnt("./save_data_fu")
+        update_global_cnt(save_dir)
 
 
-    save_path = f"./save_data_fu/{global_cnt:06d}/"
+    save_path = f"{save_dir}/{global_cnt:06d}/"
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     if not os.path.exists(save_path+'images'):
