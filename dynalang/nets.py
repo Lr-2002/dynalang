@@ -80,9 +80,9 @@ class RSSM(nj.Module):
     the embed is the task info ? todo
     """
     deter = self._gru(prev_state, prev_action, is_first)
-    print('before concate the shape is ', deter.shape)
+    # print('before concate the shape is ', deter.shape)
     x = jnp.concatenate([deter, embed], -1)
-    print('after concated the shape is ', x.shape)
+    # print('after concated the shape is ', x.shape)
     x = self.get('obs_out', Linear, **self._kw)(x)
     stats = self._stats('obs_stats', x)
     stoch = self.get_dist(stats).sample(seed=nj.rng())
