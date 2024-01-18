@@ -3,6 +3,17 @@ import numpy as np
 import os
 import json
 global_cnt = 000000
+obs_set = set(['token', 'is_read_step', 'reset', 'token_embed', 'log_language_info'])
+mapping_dict = {0: 'left', 1: 'right', 2: 'up', 3: 'down', 4: 'pickup', 5: 'drop', 6: 'get', 7: 'pedal', 8: 'grasp', 9: 'lift'}
+def from_onehot_word(x):
+    global mapping_dict
+    index = np.argmax(x)
+    return mapping_dict[index]
+
+def process_large_array(large_array):
+    words = [from_onehot_word(onehot) for onehot in large_array]
+    return words
+
 def update_global_cnt(path):
     # 检查目录是否存在
     if os.path.exists(path):
@@ -64,26 +75,27 @@ def save_data(ep, save_dir='./save_data_co'):
             "log_language_info": None
         },
         "action": None,
+        "action_word":None,
         "reward": None
     }
     global global_cnt
     if global_cnt == 000000:
         update_global_cnt(save_dir)
 
-
+    global obs_set
     save_path = f"{save_dir}/{global_cnt:06d}/"
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     if not os.path.exists(save_path+'images'):
         os.makedirs(save_path+'images')
     save_image(imgs, save_path)
-    obs_set = set(['token', 'is_read_step', 'reset', 'token_embed', 'log_language_info'])
     for key, value in ep.items():
         value = convert_numpy_to_list(value)
         if key in obs_set:
             json_data['obs'][key] = value
         elif key == 'action':
             json_data['action'] = value
+            json_data['action_word'] = process_large_array(value)
         elif key == 'reward':
             json_data['reward'] = value
         else:
