@@ -77,7 +77,7 @@ class RSSM(nj.Module):
 
   def obs_step(self, prev_state, prev_action, embed, is_first):
     """
-    the embed is the task info ? todo
+    the embed is the task info ?
     """
     deter = self._gru(prev_state, prev_action, is_first)
     # print('before concate the shape is ', deter.shape)
