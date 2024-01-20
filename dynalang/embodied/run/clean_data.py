@@ -72,13 +72,22 @@ if __name__=='__main__':
 
     # 使用正则表达式匹配以六个数字命名的文件夹
     pattern = re.compile(r'\d{6}')
-
+    exclude_file = "data_modified1.json"
     # 获取所有文件夹列表
-    folders = [folder for folder in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, folder))]
-
+    folders = [
+        folder
+        for folder in os.listdir(folder_path)
+        if os.path.isdir(os.path.join(folder_path, folder)) and exclude_file not in os.listdir(
+            os.path.join(folder_path, folder))
+    ]
+    print(folders)
     # 筛选以六个数字命名的文件夹
 
     matching_files = [os.path.join(folder_path, folder, 'data.json') for folder in folders if pattern.match(folder)]
+    matching_files.reverse()
+    # print(matching_files)
+    matching_files = sorted(matching_files)
+    # print('after sort', matching_files)
     folder_num = [int(folder) for folder in folders if pattern.match(folder)]
     max_iter = max(folder_num)
     print("max folder is ", max_iter)
