@@ -72,7 +72,7 @@ if __name__=='__main__':
 
     # 使用正则表达式匹配以六个数字命名的文件夹
     pattern = re.compile(r'\d{6}')
-    exclude_file = "data_modified1.json"
+    exclude_file = "data_modified.json"
     # 获取所有文件夹列表
     folders = [
         folder
