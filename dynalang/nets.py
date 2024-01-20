@@ -482,6 +482,7 @@ class MultiEncoder(nj.Module):
         k not in excluded and not k.startswith('log_'))}
     self.cnn_shapes = {k: v for k, v in shapes.items() if (
         len(v) == 3 and re.match(cnn_keys, k))}
+    print('!!!!!!!cnn shapes', self.cnn_shapes)
     self.mlp_shapes = {k: v for k, v in shapes.items() if (
         len(v) in (1, 2) and re.match(mlp_keys, k))}
     assert not ("token" in self.mlp_shapes and \
