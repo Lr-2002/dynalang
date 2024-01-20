@@ -2,6 +2,7 @@ import json
 from save_data import classify_description
 import os
 import sys
+import argparse
 import re
 def change_dict(input_dict):
     # 在这里实现对字典的修改逻辑
@@ -48,12 +49,19 @@ def process_one_file(file_path):
         json.dump(modified_data, file, indent=2)  # indent参数用于美化输出，可选
 
 if __name__=='__main__':
-    # 获取当前文件夹路径
-    folder_path = os.getcwd()
-    # print(folder_path)
+    # 创建命令行解析器
+    parser = argparse.ArgumentParser(description='Modify folder path.')
 
-    user_input = input(f"你当前要修改的是{folder_path}路径，你确定吗? (y/n): ")
+    # 添加命令行参数
+    parser.add_argument('--folder', type=str, default=os.getcwd(), help='Path of the folder to modify')
 
+    # 解析命令行参数
+    args = parser.parse_args()
+
+    # 获取文件夹路径
+    folder_path = args.folder
+    # 输出提示信息
+    user_input = input(f"你当前要修改的是 {folder_path} 路径，你确定吗? (y/n): ")
 
     if user_input.lower() == 'y':
         print("用户确定要修改路径。")
