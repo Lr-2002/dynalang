@@ -37,8 +37,13 @@ class JAXAgent(embodied.Agent):
 
     available = jax.devices(self.config.platform)
     print(f'available, {available}')
-    self.policy_devices = [available[i] for i in self.config.policy_devices]
-    self.train_devices = [available[i] for i in self.config.train_devices]
+    if len(available)  == 1:
+      self.policy_devices = [available[i] for i in self.config.policy_devices]
+      self.train_devices = [available[i] for i in self.config.train_devices]
+    else:
+      print('using multi')
+      self.policy_devices = available[:-1]
+      self.train_devices = available[-1]
     self.single_device = (self.policy_devices == self.train_devices) and (
         len(self.policy_devices) == 1)
     print(f'JAX devices ({jax.local_device_count()}):', available)
