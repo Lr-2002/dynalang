@@ -37,7 +37,7 @@ def classify_description(description):
         if keyword in description:
             return 'correction'
 
-    return 'unknown'
+    return False
 
 
 
@@ -97,7 +97,7 @@ def save_data(ep, save_dir='./save_data_co'):
         2. co for correction
         3. dy for dynamics
     """
-    imgs = ep['image']
+    # imgs = ep['image']
     json_data = {
         "obs": {
             "token": None,
@@ -124,7 +124,7 @@ def save_data(ep, save_dir='./save_data_co'):
         os.makedirs(save_path)
     if not os.path.exists(save_path+'images'):
         os.makedirs(save_path+'images')
-    save_image(imgs, save_path)
+    # save_image(imgs, save_path)
     classify_list = ['future', 'task','correction', 'dynamics']
     for key, value in ep.items():
         value = convert_numpy_to_list(value)
@@ -132,13 +132,22 @@ def save_data(ep, save_dir='./save_data_co'):
             json_data['obs'][key] = value
             if key == "log_language_info":
                 # json_data[key] = value
-                clas = classify_description(value)
+                lang = value
+                length = len(lang)
+                desc_dict = {cl:['<pad>' for x in range(length)] for cl in classify_list}
                 obs = json_data['obs']
-                for cls in classify_list:
-                    if clas == cls:
-                        obs[cls] = value
-                    else:
-                        obs[cls] = '<pad>'
+                print(desc_dict)
+                for i ,la in enumerate(lang):
+                    clas = classify_description(la)
+                    print(i, la, clas)
+                    if clas:
+                        desc_dict[clas][i] = la
+                obs.update(desc_dict)
+                    # for cls in classify_list:
+                    #     if clas == cls:
+                    #         obs[cls] = value
+                    #     else:
+                    #         obs[cls] = '<pad>'
         elif key == 'action':
             json_data['action'] = value
             json_data['action_word'] = process_large_array(value)
@@ -157,4 +166,4 @@ def save_data(ep, save_dir='./save_data_co'):
 
 if __name__ =='__main__':
     # print(from_onehot_word([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]))
-    print(save_data({'log_language_info':"object/bin is in the room"}, save_dir='./'))
+    print(save_data({'log_language_info':["object/bin is in the room",'object/bin is in the room', 'i moved the object to the room','put the object in the bin']}, save_dir='./'))
