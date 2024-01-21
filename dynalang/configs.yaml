@@ -1,5 +1,5 @@
 defaults:
-  use_wandb: False
+  use_wandb: True
   debug: False
 
   # Trainer
