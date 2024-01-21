@@ -34,7 +34,8 @@ def main(argv=None):
   args = embodied.Config(
       **config.run, logdir=f"{config.logdir}",
       batch_steps=config.batch_size * config.batch_length)
-  # print(config)
+  config.use_wandb = True
+  print(config)
 
   logdir = embodied.Path(args.logdir)
   if args.script != 'parallel_env':
