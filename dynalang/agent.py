@@ -242,6 +242,7 @@ class WorldModel(nj.Module):
 
     # LM loss
     if self.scales["lm"] > 0:
+      ## language predict
       print("Adding LM loss")
       next_ac = data["action"][:, :-1].reshape((-1, 1, *data["action"].shape[2:]))
       context = {k: v[:, :-1].reshape((-1, *v.shape[2:]))
