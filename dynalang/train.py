@@ -189,6 +189,7 @@ def make_logger(parsed, logdir, step, config):
                                   '(episode/score|real_step)'),
       embodied.logger.TensorBoardOutput(logdir),
   ], multiplier)
+  print('using wandb? ', config.use_wandb)
   if config.use_wandb:
     import wandb
     wandb_id_file = f"{str(logdir)}/wandb_id.txt"
