@@ -21,7 +21,23 @@ class HomeGrid(embodied.Env):
     from . import from_gym
     import homegrid
     import gym
-    assert task in ("task", "future", "dynamics", "corrections")
+    from gym.envs.registration import register
+    sym = {'step': 0, 'agent': {'pos': (5, 9), 'room': 'K', 'dir': 1, 'carrying': None}, 'objects': [
+      {'name': 'recycling bin', 'type': 'Storage', 'pos': (12, 10), 'room': 'D', 'state': 'open', 'action': 'lift',
+       'invisible': None, 'contains': []},
+      {'name': 'trash bin', 'type': 'Storage', 'pos': (11, 1), 'room': 'L', 'state': 'closed', 'action': 'lift',
+       'invisible': None, 'contains': []},
+      {'name': 'fruit', 'type': 'Pickable', 'pos': (8, 2), 'room': 'L', 'state': None, 'action': None,
+       'invisible': False, 'contains': None},
+      {'name': 'bottle', 'type': 'Pickable', 'pos': (12, 2), 'room': 'L', 'state': None, 'action': None,
+       'invisible': False, 'contains': None}], 'front_obj': None, 'unsafe': {'name': None, 'poss': {}, 'end': -1}}
+    register(
+      id="homegrid-fix",
+      entry_point="homegrid:HomeGrid",
+      kwargs={"lang_types": ["task"],
+              'fixed_state': sym},
+    )
+    assert task in ("task", "future", "dynamics", "corrections", 'fix')
     env = gym.make(f"homegrid-{task}", 
                    disable_env_checker=True,
                    max_steps=max_steps,
