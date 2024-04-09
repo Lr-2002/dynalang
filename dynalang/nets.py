@@ -179,11 +179,14 @@ class RSSM(nj.Module):
   def _stats(self, name, x):
     if self._impl == 'gaussian':
       x = self.get(name, Linear, 2 * self._stoch)(x)
+      print('x.shape ', x.shape)
       mean, std = jnp.split(x, 2, -1)
       std = 2 * jax.nn.sigmoid(std / 2) + 0.1
       return {'mean': mean, 'std': std}
     if self._impl == 'softmax':
       x = self.get(name, Linear, self._stoch * self._classes)(x)
+      print('x.shape ', x.shape)
+
       logit = x.reshape(x.shape[:-1] + (self._stoch, self._classes))
       if self._unimix:
         probs = jax.nn.softmax(logit, -1)
@@ -193,6 +196,8 @@ class RSSM(nj.Module):
       return {'logit': logit}
     if self._impl == 'maskgit':
       x = self.get(name, Linear, self._stoch * self._classes)(x)
+      print('x.shape ', x.shape)
+
       logit = x.reshape(x.shape[:-1] + (self._stoch, self._classes))
       if self._unimix:
         probs = jax.nn.softmax(logit, -1)

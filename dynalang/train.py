@@ -202,6 +202,7 @@ def make_logger(parsed, logdir, step, config):
     project = config.task
     wandb.init(
         id=wandb_id,
+        entity="test_awm",
         resume="allow",
         project=project,
         name=logdir.name,
@@ -273,6 +274,7 @@ def make_env(config, **overrides):
     'homegrid': 'embodied.envs.homegrid:HomeGrid',
     'vln': 'embodied.envs.vln:VLNEnv',
     'langroom': 'langroom:LangRoom',
+    'minitask': 'embodied.envs.minitask:Minitask',
     'procgen': lambda task, **kw: from_gym.FromGym(
         f'procgen:procgen-{task}-v0', **kw),
   }[suite]
