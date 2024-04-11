@@ -32,7 +32,7 @@ class Agent(nj.Module):
   def __init__(self, obs_space, act_space, step, config):
     self.config = config
     self.obs_space = obs_space
-    self.act_space = act_space['action']
+    self.act_space = act_space
     self.step = step
     with jax.transfer_guard("allow"):
       dummy_preproc = self.preprocess(
@@ -153,8 +153,10 @@ class WorldModel(nj.Module):
 
   def __init__(self, obs_space, act_space, config, shapes):
     self.obs_space = obs_space
-    self.act_space = act_space['action']
+    self.act_space = act_space
     self.config = config
+    # self.config.encoder.update({'mlp_keys': "token$"})
+    # self.config.decder.update({'mlp_keys': "token$"})
 #    shapes = {k: tuple(v.shape) for k, v in obs_space.items()}
 #    shapes = {k: v for k, v in shapes.items() if not k.startswith('log_')}
     self.encoder = nets.MultiEncoder(shapes, **config.encoder, name='enc')
@@ -179,7 +181,10 @@ class WorldModel(nj.Module):
 
   def initial(self, batch_size):
     prev_latent = self.rssm.initial(batch_size)
-    prev_action = jnp.zeros((batch_size, *self.act_space.shape))
+    if isinstance(self.act_space, dict):
+      prev_action = {k:jnp.zeros((batch_size, *v.shape)) for k,v in self.act_space.items()}
+    else:
+      prev_action = jnp.zeros((batch_size, *self.act_space.shape))
     return prev_latent, prev_action
 
   def train(self, data, state):
@@ -211,8 +216,21 @@ class WorldModel(nj.Module):
       zero_mlp=self.config.zero_mlp,
       zero_cnn=self.config.zero_cnn)
     prev_latent, prev_action = state
-    prev_actions = jnp.concatenate([
-        prev_action[:, None], data['action'][:, :-1]], 1)
+    if isinstance(self.act_space, dict):
+      prev_actions = {}
+      for i in prev_action.keys():
+        if i == 'reset' :
+          continue
+        prev_actions[i] = jnp.concatenate(
+          [
+            prev_action[i][:],
+            data[i][:, -1]
+          ],
+          1
+        )
+    else:
+      prev_actions = jnp.concatenate([
+          prev_action[:, None], data['action'][:, :-1]], 1)
     if self.config.rssm_type == "token":
       post = self.rssm.observe(
           prev_actions, embed, data["token"], data['is_first'], prev_latent)
@@ -414,9 +432,20 @@ class ImagActorCritic(nj.Module):
     self.scales = scales
     self.act_space = act_space
     self.config = config
-    disc = act_space.discrete
+    # disc = act_space.discrete
+    disc = {k: v.discrete for (k, v) in zip(self.act_space.keys(), self.act_space.values())}
     self.grad = config.actor_grad_disc if disc else config.actor_grad_cont
-    self.actor = nets.MLP(
+    self.grad = {k: config.actor_grad_disc if v else config.actor_grad_cont for k,v in disc.items()}
+    if isinstance(self.act_space, dict):
+      self.actor_dict = {}
+      for k, v in self.act_space.items():
+        actor = nets.MLP(
+          name=k+'_actor', dims='deter', shape=v.shape, **config.actor,
+          dist=config.actor_dist_disc if disc[k] else config.actor_dist_cont
+        )
+        self.actor_dict[k] = actor
+    else:
+      self.actor = nets.MLP(
         name='actor', dims='deter', shape=act_space.shape, **config.actor,
         dist=config.actor_dist_disc if disc else config.actor_dist_cont)
     self.retnorms = {
@@ -428,9 +457,14 @@ class ImagActorCritic(nj.Module):
     return {}
 
   def policy(self, state, carry, sample=True):
-    dist = self.actor(sg(state))
-    action = dist.sample(seed=nj.rng()) if sample else dist.mode()
-    return {'action': action}, carry
+    if isinstance(self.act_space, dict):
+      dist = {k:v(sg(state)) for k,v in self.actor_dict.items()}
+      action = {k: v.sample(seed=nj.rng()) if sample else v.mode() for k,v in dist.items()}
+      return action, carry
+    else:
+      dist = self.actor(sg(state))
+      action = dist.sample(seed=nj.rng()) if sample else dist.mode()
+      return {'action': action}, carry
 
   def train(self, imagine, start, context):
     carry = self.initial(len(start['deter']))

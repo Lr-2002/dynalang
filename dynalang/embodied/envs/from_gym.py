@@ -13,8 +13,10 @@ class FromGym(embodied.Env):
     else:
       assert not kwargs, kwargs
       self._env = env
-    self._obs_dict = hasattr(self._env.observation_space, 'spaces')
-    self._act_dict = hasattr(self._env.action_space, 'spaces')
+    self._obs_dict = hasattr(self._env.observation_spaces, 'spaces')
+    # self._obs_dict = self._env.observation_spaces if hasattr(self._env, 'observation_spaces') else  hasattr(self._env.observation_space, 'spaces')
+    # self._act_dict = self._env.action_spaces if hasattr(self._env, 'action_spaces') else hasattr(self._env.action_space, 'spaces')
+    self._act_dict =hasattr(self._env.action_spaces, 'spaces')
     self._obs_key = obs_key
     self._act_key = act_key
     self._done = True
@@ -27,7 +29,7 @@ class FromGym(embodied.Env):
   @functools.cached_property
   def obs_space(self):
     if self._obs_dict:
-      spaces = self._flatten(self._env.observation_space.spaces)
+      spaces = self._flatten(self._env.observation_spaces.spaces)
     else:
       spaces = {self._obs_key: self._env.observation_space}
     spaces = {k: self._convert(v) for k, v in spaces.items()}
@@ -42,7 +44,7 @@ class FromGym(embodied.Env):
   @functools.cached_property
   def act_space(self):
     if self._act_dict:
-      spaces = self._flatten(self._env.action_space.spaces)
+      spaces = self._flatten(self._env.action_spaces.spaces)
     else:
       spaces = {self._act_key: self._env.action_space}
     spaces = {k: self._convert(v) for k, v in spaces.items()}

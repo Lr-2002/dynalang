@@ -59,16 +59,19 @@ class RSSM(nj.Module):
     return cast(state)
 
   def observe(self, embed, action, is_first, state=None):
-    state = state or self.initial(action.shape[0])
+    state = state or self.initial(action['city_id'].shape[0])
     swap = lambda x: x.transpose([1, 0] + list(range(2, len(x.shape))))
     step = lambda prev, inputs: self.obs_step(prev, *inputs)
-    inputs = swap(action), swap(embed), swap(is_first)
+    swap_dict = lambda x: {k:v.transpose([1,0] + list(range(2, len(v.shape)))) for k, v in x.items()}
+    # step_dict = lambda prev, inputs:
+
+    inputs = swap_dict(action), swap(embed), swap(is_first)
     post = jaxutils.scan(step, inputs, state, self._unroll)
-    post = {k: swap(v) for k, v in post.items()}
+    post = {k: swap_dict(v) for k, v in post.items()}
     return post
 
   def imagine(self, action, state=None):
-    state = state or self.initial(action.shape[0])
+    state = state or self.initial(action['city_id'].shape[0])
     swap = lambda x: x.transpose([1, 0] + list(range(2, len(x.shape))))
     action = swap(action)
     prior = jaxutils.scan(self.img_step, action, state, self._unroll)
@@ -149,19 +152,27 @@ class RSSM(nj.Module):
       return cast({'stoch': stoch, 'deter': deter, **stats})
 
   def _gru(self, prev_state, prev_action, is_first=None):
-    prev_action = cast(prev_action)
+    dict_cast = lambda dic:  {k: cast(v) for k,v in dic.items()}
+    prev_action = dict_cast(prev_action)
     if self._action_clip > 0.0:
-      prev_action *= sg(self._action_clip / jnp.maximum(
+      if isinstance(prev_state, dict):
+        for k,v in prev_action.items():
+          prev_action[k] *= sg(self._action_clip / jnp.maximum(
+            self._action_clip, jnp.abs(prev_action[k])))
+      else:
+        prev_action *= sg(self._action_clip / jnp.maximum(
           self._action_clip, jnp.abs(prev_action)))
     if is_first is not None:
+      act_zero = {k:jnp.zeros_like(v) for k,v in prev_action.items()}
       prev_state, prev_action = tree_map(
           lambda prev, init: jaxutils.switch(is_first, init, prev),
           (prev_state, prev_action),
-          (self.initial(len(is_first)), jnp.zeros_like(prev_action)))
+          (self.initial(len(is_first)), act_zero))
     batch_shape = prev_state['deter'].shape[:-1]
+    # todo 411
     x = jnp.concatenate([
         prev_state['stoch'].reshape((*batch_shape, -1)),
-        cast(prev_action).reshape((*batch_shape, -1))], -1)
+        dict_cast(prev_action).reshape((*batch_shape, -1))], -1)
     x = self.get('img_in', Linear, **self._kw)(x)
     x = jnp.concatenate([prev_state['deter'], x], -1)
     if self._bottleneck > 0:
